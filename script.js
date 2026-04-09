@@ -70,8 +70,8 @@ let sheetData = [];
 let sheetHeaders = [];
 let filteredData = [];
 let closedQueries = new Set(); // "email_phone_date" exact keys
-let closedEmailPhoneSet = new Set(); // "email_phone" — fallback (ignores date drift)
-let closedEmailSet = new Set(); // unused — kept for localStorage key-rebuild only
+let closedEmailPhoneSet = new Set(); // "email_phone" fallback
+let closedEmailSet = new Set(); // email-only fallback — most reliable
 let closedQueriesDetails = {};       // exactKey → { email, phone, date, messages, closedOn }
 let queriesResolved = 0;
 
@@ -83,6 +83,17 @@ let currentPage = 1;
 let statusFilter = 'all';
 
 // ═══════════════════════════════════════════════════════════════════
+//  DATE NORMALIZER — single source of truth for date formatting
+//  Used in both syncClosedQueriesFromSheet() and renderTable()/getGroupedData()
+//  so keys always match regardless of raw date string format.
+// ═══════════════════════════════════════════════════════════════════
+function normalizeDate(val) {
+    if (!val) return '';
+    const d = new Date(val);
+    return isNaN(d) ? String(val).trim() : d.toLocaleDateString();
+}
+
+// ═══════════════════════════════════════════════════════════════════
 //  CLOSED-ENTRY LOOKUP HELPER
 //
 //  TWO-LEVEL match (most specific → least specific):
@@ -91,11 +102,13 @@ let statusFilter = 'all';
 // ═══════════════════════════════════════════════════════════════════
 function isEntryClosed(email, phone, date) {
     if (!email) return false;
+    const e = email.trim().toLowerCase();
     const exactKey = `${email}_${phone}_${date}`;
     const looseKey = `${email}_${phone}`;
     return (
-        closedQueries.has(exactKey) ||       // L1: exact
-        closedEmailPhoneSet.has(looseKey)    // L2: email+phone (date drift)
+        closedQueries.has(exactKey) ||        // L1: exact key
+        closedEmailPhoneSet.has(looseKey) ||  // L2: email+phone
+        closedEmailSet.has(e)                 // L3: email only (most reliable)
     );
 }
 
@@ -251,28 +264,20 @@ async function syncClosedQueriesFromSheet() {
             const rawPhone = (row['Phone'] || '').trim();
             const rawDate = (row['Date'] || '').trim();
 
-            // Skip rows we cannot identify at all
             if (!email) return;
 
-            // ── Phone: treat '#ERROR!', '#N/A', empty, or undefined as invalid ──
             const phoneIsValid = rawPhone && !rawPhone.startsWith('#') && rawPhone !== 'undefined';
             const phone = phoneIsValid ? rawPhone : '';
-
-            // ── Date: normalise to toLocaleDateString() to match renderTable keys ──
-            let date = rawDate;
-            if (rawDate) {
-                const parsed = new Date(rawDate);
-                if (!isNaN(parsed)) date = parsed.toLocaleDateString();
-            }
+            const date = normalizeDate(rawDate);
 
             const exactKey = `${email}_${phone}_${date}`;
             const looseKey = `${email}_${phone}`;
 
-            closedQueries.add(exactKey);                              // Level 1: exact
-            if (phone) closedEmailPhoneSet.add(looseKey);            // Level 2: email+phone
+            closedQueries.add(exactKey);
+            closedEmailPhoneSet.add(looseKey);
+            closedEmailSet.add(email.toLowerCase());   // L3: email-only match
             closedQueriesDetails[exactKey] = {
-                date,
-                email,
+                date, email,
                 phone: phoneIsValid ? rawPhone : '',
                 messages: (row['Messages'] || '').split(' | ').filter(Boolean),
                 closedOn: row['Closed On'] || '',
@@ -428,7 +433,7 @@ function renderTable() {
 
     dataToRender.forEach(row => {
         const dateValue = row.Date || row.date || row.timestamp || row.Timestamp;
-        const date = dateValue ? new Date(dateValue).toLocaleDateString() : '';
+        const date = normalizeDate(dateValue);
         const email = row.Email || row.email || '';
         const phone = row.Phone || row.phone || '';
         const messages = row.Messages || row.messages || [];
@@ -450,8 +455,7 @@ function renderTable() {
     if (statusFilter === 'closed') {
         sortedGroups = sortedGroups.filter(g => isEntryClosed(g.email, g.phone, g.date));
     } else {
-        // 'all' and 'open' — ALWAYS hide closed entries so they never
-        // reappear on the main tab even after a fresh browser open / deploy.
+        // 'all' and 'open' — ALWAYS hide closed entries from main view
         sortedGroups = sortedGroups.filter(g => !isEntryClosed(g.email, g.phone, g.date));
     }
 
@@ -801,8 +805,8 @@ function updateStats() {
     const totalLeads = Object.keys(grouped).length;
     const closedCount = closedQueries.size;
 
-    // Count open queries by checking each grouped entry
-    const openCount = Object.keys(grouped).filter(key => !closedQueries.has(key)).length;
+    // Count open queries using isEntryClosed() so loose-key fallback is included
+    const openCount = Object.values(grouped).filter(g => !isEntryClosed(g.email, g.phone, g.date)).length;
 
     // Total unique leads
     document.getElementById('total-users').innerText = totalLeads;
@@ -826,7 +830,7 @@ function getGroupedData() {
     const grouped = {};
     sheetData.forEach(row => {
         const dateValue = row.Date || row.date || row.timestamp || row.Timestamp;
-        const date = dateValue ? new Date(dateValue).toLocaleDateString() : '';
+        const date = normalizeDate(dateValue);
         const email = row.Email || row.email || '';
         const phone = row.Phone || row.phone || '';
         const messages = row.Messages || row.messages || [];
