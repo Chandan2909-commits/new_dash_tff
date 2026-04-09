@@ -16,19 +16,19 @@
 
 <body>
 
-    <!-- ═══════════════ LOGIN GATE ═══════════════ -->
+
     <div id="login-gate" class="login-gate">
         <div class="login-card">
-            <!-- Logo / Brand -->
+
             <div class="login-brand">
                 <div class="login-brand-icon">
                     <img src="logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 16px;">
                 </div>
-                <h1 class="login-brand-name logo-text-animated">The Only Prop Firm</h1>
+                <h1 class="login-brand-name logo-text-animated">The Fusion Funded</h1>
                 <p class="login-tagline">Sign in to your dashboard</p>
             </div>
 
-            <!-- Form -->
+
             <form id="login-form" class="login-form" autocomplete="off">
                 <div class="login-field">
                     <label for="login-username">Username</label>
@@ -61,10 +61,7 @@
             </form>
         </div>
     </div>
-    <!-- ═══════════════════════════════════════════ -->
-
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
                 <img src="logo.png" alt="Logo" style="width: 70px; height: 70px; object-fit: contain;">
@@ -73,23 +70,16 @@
             <nav class="nav-links">
                 <a href="#" class="nav-link active" data-section="dashboard"><i class="fa-solid fa-house"></i>
                     Dashboard</a>
-                <!-- <a href="#" class="nav-link" data-section="accounts"><i class="fa-solid fa-wallet"></i> Accounts</a> -->
                 <a href="#" class="nav-link" data-section="analytics"><i class="fa-solid fa-chart-pie"></i>
                     Analytics</a>
                 <a href="#" class="nav-link" id="closed-queries-nav" data-section="closed-queries"><i
                         class="fa-solid fa-circle-xmark"></i> Closed Queries <span id="closed-count-badge"
                         class="closed-badge">0</span></a>
-                <!-- <a href="#" class="nav-link" data-section="settings"><i class="fa-solid fa-gear"></i> Settings</a> -->
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="top-bar">
-                <!-- <div class="search-bar">
-                    <i class="fa-solid fa-search"></i>
-                    <input type="text" placeholder="Search leads...">
-                </div> -->
                 <div class="user-profile">
                     <span>Admin</span>
                     <div class="avatar" id="user-avatar">A</div>
@@ -101,7 +91,6 @@
                 </div>
             </header>
 
-            <!-- Dashboard Section -->
             <div id="dashboard-section" class="content-section">
                 <div class="section-title">Overview</div>
                 <div class="stats-cards">
@@ -170,14 +159,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Rows will be injected here -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Query View Section -->
             <div id="query-section" class="content-section" style="display: none;">
                 <div class="section-header">
                     <button class="btn-back" id="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to
@@ -191,7 +178,6 @@
                 </div>
             </div>
 
-            <!-- Analytics Section -->
             <div id="analytics-section" class="content-section" style="display: none;">
                 <div class="section-title">Analytics</div>
                 <div class="analytics-grid">
@@ -210,7 +196,6 @@
                 </div>
             </div>
 
-            <!-- Closed Queries Section -->
             <div id="closed-queries-section" class="content-section" style="display: none;">
                 <div class="section-title">Closed Queries</div>
                 <div class="data-table-section">
@@ -233,7 +218,6 @@
                                 </tr>
                             </thead>
                             <tbody id="closed-queries-tbody">
-                                <!-- Rows injected via JS -->
                             </tbody>
                         </table>
                     </div>
@@ -242,20 +226,17 @@
         </main>
     </div>
 
-    <!-- Edit Modal -->
     <div id="edit-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
             <h2>Edit Entry</h2>
             <form id="edit-form">
-                <!-- Form fields injected via JS -->
                 <div id="modal-fields"></div>
                 <button type="submit" class="btn-save">Save Changes</button>
             </form>
         </div>
     </div>
 
-    <!-- Query Modal -->
     <div id="query-modal" class="modal">
         <div class="modal-content">
             <span class="close-query-modal">&times;</span>
@@ -264,7 +245,6 @@
         </div>
     </div>
 
-    <!-- Loader -->
     <div id="page-loader" class="page-loader">
         <div class="loader-spinner"></div>
     </div>
